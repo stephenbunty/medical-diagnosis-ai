@@ -1,0 +1,34 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: medai-backend
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-dev-secret-change-me}
+      DATABASE_URL: sqlite+aiosqlite:////app/backend/data/medical_ai.db
+      CORS_ORIGINS: http://localhost:8080,http://127.0.0.1:8080,http://localhost,http://127.0.0.1
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    volumes:
+      - medai-data:/app/backend/data
+      - medai-ml-checkpoints:/app/ml_models/checkpoints
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+      args:
+        VITE_API_URL: ""
+    container_name: medai-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  medai-data:
+  medai-ml-checkpoints:
